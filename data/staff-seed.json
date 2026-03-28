@@ -1,0 +1,47 @@
+{
+  "description": "Dữ liệu mẫu nhân sự để import vào database. Chạy: yarn seed:staff hoặc node src/seeds/import-staff-from-json.js",
+  "defaultPassword": "123456",
+  "staff": [
+    {
+      "name": "Le Van A",
+      "phone": "0901234501",
+      "email": "levana@gmail.com",
+      "password": "123456",
+      "role": "admin"
+    },
+    {
+      "name": "Nguyen B",
+      "phone": "0901234502",
+      "email": "nguyenb@gmail.com",
+      "password": "123456",
+      "role": "receptionist"
+    },
+    {
+      "name": "Le Van D",
+      "phone": "0901234503",
+      "email": "levand@gmail.com",
+      "password": "123456",
+      "role": "driver"
+    },
+    {
+      "name": "Le Van C",
+      "phone": "0901234504",
+      "email": "levanc@gmail.com",
+      "password": "123456",
+      "role": "assistant_driver"
+    },
+    {
+      "name": "Tran Thi E",
+      "phone": "0901234505",
+      "email": "tranthie@gmail.com",
+      "password": "123456",
+      "role": "receptionist"
+    },
+    {
+      "name": "Pham Van F",
+      "phone": "0901234506",
+      "password": "123456",
+      "role": "driver"
+    }
+  ]
+}
