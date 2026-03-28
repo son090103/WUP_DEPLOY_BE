@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var cors = require("cors");
 const ROUTES = require("./src/router/registry.routes");
-const whitelist = ["http://localhost:3000", "http://localhost:5173", "https://wup-deploy-fe-58mv.vercel.app"];
+const whitelist = ["http://localhost:3000", "http://localhost:5173", "https://wup-deploy-fe-58mv.vercel.app", "https://wup-be.onrender.com"];
 const { startTripReminderJob } = require("./src/util/cronJob");
 
 app.use(
