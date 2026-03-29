@@ -1577,7 +1577,7 @@ module.exports.getAllBusType = async (req, res) => {
 // Hàm tạo xe
 module.exports.createBus = async (req, res) => {
   try {
-    const { license_plate, bus_type_id,current_stop_id, seat_layout } = req.body;
+    const { license_plate, bus_type_id, current_stop_id, seat_layout } = req.body;
     if (!license_plate || !bus_type_id || !current_stop_id || !seat_layout) {
       return res.status(404).json({ message: "Các trường là bắt buộc" });
     }
@@ -2340,25 +2340,25 @@ module.exports.getAvailableAssistantDriver = async (req, res) => {
 };
 
 // Hàm tạo hàng loạt Trip
-module.exports.createSeriesOfTrips = async (req,res) => {
+module.exports.createSeriesOfTrips = async (req, res) => {
   try {
-    const {route_id,departure_hour,start_date, end_date} = req.body;
-    if(!route_id || !departure_hour || !start_date || !end_date ){
+    const { route_id, departure_hour, start_date, end_date } = req.body;
+    if (!route_id || !departure_hour || !start_date || !end_date) {
       return res.status(404).json({ message: "Các trường là bắt buộc" });
     };
-     const route = await Route.findById(route_id);
+    const route = await Route.findById(route_id);
     if (!route) {
       return res.status(404).json({ message: "Tuyến không tồn tại" });
     };
     const start = new Date(start_date);
     const end = new Date(end_date);
-     if (start > end) {
+    if (start > end) {
       return res.status(400).json({ message: "Ngày bắt đầu phải trước ngày kết thúc" });
     };
     const [hours, minutes] = departure_hour.split(":").map(Number);
     const duration = route.estimated_duration; // số giờ từ route
     const trips = [];
-     for (let d = new Date(start); d <= end; d = new Date(d.getTime() + 24 * 60 * 60 * 1000)) {
+    for (let d = new Date(start); d <= end; d = new Date(d.getTime() + 24 * 60 * 60 * 1000)) {
       const departure = new Date(d);
       departure.setUTCHours(hours - 7, minutes, 0, 0);
       const arrival = new Date(departure.getTime() + duration * 60 * 60 * 1000);
@@ -2371,9 +2371,9 @@ module.exports.createSeriesOfTrips = async (req,res) => {
       });
     };
     const tripsCreated = await Trip.insertMany(trips);
-    return res.status(201).json({message: `Tạo thành công ${tripsCreated.length} chuyến đi`,});
+    return res.status(201).json({ message: `Tạo thành công ${tripsCreated.length} chuyến đi`, });
   } catch (error) {
-    console.log("ERROR",error.message);
+    console.log("ERROR", error.message);
     return res.status(500).json({ message: "Lỗi server" });
   }
 };
@@ -2414,7 +2414,7 @@ module.exports.createTrips = async (req, res) => {
       return res.status(404).json({ message: "Xe không tồn tại" });
     }
     const assistant = await User.findById(assistant_id);
-    if (!assistant || assistant.role != "696ca255bc014a7a76f7caa8") {
+    if (!assistant || assistant.role != "696cd2007cd73a094f45fd02") {
       return res.status(404).json({ message: "Phụ xe không tồn tại" });
     }
     for (let d of drivers) {
