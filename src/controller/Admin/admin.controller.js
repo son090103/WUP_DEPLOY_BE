@@ -2439,6 +2439,9 @@ module.exports.createTrips = async (req, res) => {
       departure_time,
       arrival_time,
       scheduled_duration,
+      // thêm cứng
+      max_weight_kg: 500,
+      max_volume_m3: 9
     });
     await trip.save();
     return res.status(201).json({ message: "Tạo chuyến thành công" });
