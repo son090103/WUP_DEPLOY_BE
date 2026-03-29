@@ -1971,20 +1971,10 @@ module.exports.getAllBuses = async (req, res) => {
 
       const lastTrip = lastTripMap[busId];
       const futureTrip = futureTripMap[busId];
-      let busLocation = null;
-      // CASE 1: Xe có chuyến trước đó → vị trí = điểm kết thúc chuyến gần nhất
+
+      let busLocation = bus.current_stop_id;
       if (lastTrip && lastTrip.location) {
         busLocation = lastTrip.location;
-      }
-      // CASE 2: Xe chưa từng chạy → dùng current_stop_id
-      else if (bus.current_stop_id) {
-        busLocation = bus.current_stop_id;
-      }
-      // Không xác định được vị trí → loại
-      if (!busLocation) continue;
-      // Check bến xuất phát
-      if (busLocation.toString() !== start_stop_id.toString()) {
-        continue;
       }
       if (!busLocation) continue;
       if (busLocation.toString() !== start_stop_id.toString()) {

@@ -46,5 +46,5 @@ routerUserCheck.get(
     "/shifts/stats",
     driverController.getDriverStats
 );
-
+routerUserCheck.put("/complete-shift", driverController.completeShift);
 module.exports = routerUserCheck;
