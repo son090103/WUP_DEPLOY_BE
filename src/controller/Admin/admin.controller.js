@@ -2419,7 +2419,7 @@ module.exports.createTrips = async (req, res) => {
     }
     for (let d of drivers) {
       const driver = await User.findById(d.driver_id);
-      if (!driver || driver.role != "696ca255bc014a7a76f7caa7") {
+      if (!driver || driver.role != "6989d2d5753034e791da3d2c") {
         return res.status(404).json({ message: "Tài xế không tồn tại" });
       }
       if (
