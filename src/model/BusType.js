@@ -16,7 +16,7 @@ const busTypeSchema = new mongoose.Schema(
 
         category: {
             type: String,
-            enum: ["SEAT", "BED", "ROOM", "LIMOUSINE"],
+            enum: ["SEAT", "BED", "ROOM", "LIMOUSINE", "SLEEPER"],
             required: true,
         },
         // những thứ tiện ích đầy đủ trên xe
