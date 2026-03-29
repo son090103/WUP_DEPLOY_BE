@@ -42,13 +42,11 @@ module.exports.getAllTripsForAssistants = async (req, res) => {
             return res.status(400).json({ success: false, message: "Assistant ID is required" });
         }
 
-        // ✅ Trip có field assistant_id trực tiếp (không phải trong mảng drivers)
         let filter = {
             assistant_id: assistantId,
             status: { $ne: "CANCELLED" },
         };
 
-        // Filter theo trip status nếu có
         if (status && ["SCHEDULED", "RUNNING", "FINISHED", "CANCELLED"].includes(status)) {
             filter.status = status;
         }
@@ -60,7 +58,13 @@ module.exports.getAllTripsForAssistants = async (req, res) => {
         const trips = await Trip.find(filter)
             .populate({
                 path: "route_id",
-                select: "departure_location arrival_location distance",
+                // ✅ Chỉ select field thật trong Route schema
+                select: "start_id stop_id distance_km estimated_duration",
+                populate: [
+                    // ✅ Double-populate Stop để lấy name + province
+                    { path: "start_id", select: "name province" },
+                    { path: "stop_id", select: "name province" },
+                ],
             })
             .populate({
                 path: "bus_id",
@@ -80,34 +84,64 @@ module.exports.getAllTripsForAssistants = async (req, res) => {
             })
             .sort({ departure_time: -1 })
             .skip(skip)
-            .limit(parseInt(limit));
+            .limit(parseInt(limit))
+            .lean();                         // .lean() để map nhanh hơn
 
-        // Format response
-        const data = trips.map((trip) => ({
-            id: trip._id,
-            tripId: trip._id,
-            date: formatDate(trip.departure_time),
-            departureTime: formatTime(trip.departure_time),
-            arrivalTime: formatTime(trip.arrival_time),
-            from: trip.route_id?.departure_location || "N/A",
-            to: trip.route_id?.arrival_location || "N/A",
-            distance: trip.route_id?.distance || "N/A",
-            vehicle: trip.bus_id?.bus_type_id?.name || "N/A",
-            vehicleType: trip.bus_id?.bus_type_id?.name || "N/A",
-            licensePlate: trip.bus_id?.license_plate || "N/A",
-            totalSeats: trip.bus_id?.bus_type_id?.seats_count || 0,
-            // Lái xe chính của chuyến này
-            mainDrivers: trip.drivers?.map((d) => ({
-                name: d.driver_id?.name || "N/A",
-                phone: d.driver_id?.phone || "N/A",
-                shiftStatus: d.status,
-            })) || [],
-            tripStatus: trip.status,
-            duration: formatDuration(trip.departure_time, trip.arrival_time),
-            createdAt: trip.created_at,
-            displayTime: `${formatTime(trip.departure_time)} - ${formatTime(trip.arrival_time)}`,
-            displayRoute: `${trip.route_id?.departure_location || "N/A"} → ${trip.route_id?.arrival_location || "N/A"}`,
-        }));
+        const data = trips.map((trip) => {
+            const route = trip.route_id;
+
+            // ── Lấy tên điểm đi / điểm đến từ Stop ──
+            const fromName = route?.start_id?.name || "N/A";
+            const fromProvince = route?.start_id?.province || "";
+            const toName = route?.stop_id?.name || "N/A";
+            const toProvince = route?.stop_id?.province || "";
+
+            // Ghép "Tên bến, Tỉnh" — bỏ phần trùng nếu name == province
+            const buildLocation = (name, province) => {
+                if (!province || name === province) return name;
+                return `${name}, ${province}`;
+            };
+
+            const from = buildLocation(fromName, fromProvince);
+            const to = buildLocation(toName, toProvince);
+
+            return {
+                id: trip._id,
+                tripId: trip._id,
+                date: formatDate(trip.departure_time),
+                departureTime: formatTime(trip.departure_time),
+                arrivalTime: formatTime(trip.arrival_time),
+
+                // ✅ from / to đã có tên + tỉnh
+                from,
+                to,
+
+                // ✅ distance từ distance_km (Route schema)
+                distance: route?.distance_km != null
+                    ? `${route.distance_km} km`
+                    : "N/A",
+
+                // ✅ duration tính từ departure/arrival
+                duration: formatDuration(trip.departure_time, trip.arrival_time),
+
+                vehicle: trip.bus_id?.bus_type_id?.name || "N/A",
+                vehicleType: trip.bus_id?.bus_type_id?.name || "N/A",
+                licensePlate: trip.bus_id?.license_plate || "N/A",
+                totalSeats: trip.bus_id?.bus_type_id?.seats_count || 0,
+
+                // ✅ Đổi tên mainDrivers để FE phân biệt với assistants
+                mainDrivers: (trip.drivers || []).map((d) => ({
+                    name: d.driver_id?.name || "N/A",
+                    phone: d.driver_id?.phone || "N/A",
+                    shiftStatus: d.status,
+                })),
+
+                tripStatus: trip.status,
+                createdAt: trip.created_at,
+                displayTime: `${formatTime(trip.departure_time)} - ${formatTime(trip.arrival_time)}`,
+                displayRoute: `${from} → ${to}`,
+            };
+        });
 
         return res.status(200).json({
             success: true,
@@ -118,7 +152,11 @@ module.exports.getAllTripsForAssistants = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in getAllTripsForAssistants:", error);
-        return res.status(500).json({ success: false, message: "Failed to fetch assistant shifts", error: error.message });
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch assistant shifts",
+            error: error.message,
+        });
     }
 };
 
